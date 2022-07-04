@@ -1,6 +1,6 @@
 import multer from "multer"
 import fs from 'fs/promises'
-import AWS from '../lib/AWS_config.js'
+import AWS from '../config/AWS_config.js'
 
 import dotenv from 'dotenv'
 
@@ -56,7 +56,7 @@ export const uploadFile = (async (req, res, next) => {
 
 
             if (!req.file) {
-                return res.status(400).json({ error: "No Image" })
+                return res.status(400).json({ message: "No Image" })
             }
 
 
@@ -71,15 +71,17 @@ export const uploadFile = (async (req, res, next) => {
                 Key: "uploads/" + originalname,
                 Body: fileData,
 
-            }, (res, err) => {
+            }, (s3Data, err) => {
 
-                console.log(res);
+                console.log(s3Data);
                 fs.unlink(path)
                 res.status(200).json({ error: "file uploaded" })
 
                 if (err) {
                     console.log('============S3 Upload Error========================');
                     console.log(err);
+                    res.status(400).json({ error: "file uploaded error S3" })
+
                     console.log('====================================');
                 }
 

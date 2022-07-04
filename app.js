@@ -6,9 +6,9 @@ import createError from 'http-errors';
 
 
 import express from 'express';
-import indexRouter from './routes/index.js'
-import usersRouter from './routes/users.js'
-import fileRouter from './routes/file.js'
+import indexRouter from './src/routes/index.js'
+import usersRouter from './src/routes/users.js'
+import fileRouter from './src/routes/file.js'
 import { fileURLToPath } from 'url'
 
 //fix for __dirname in es module 
