@@ -1,4 +1,6 @@
+import dotenv from 'dotenv'
 
+dotenv.config()
 
 import app from '../app.js';
 import debug from 'debug';
@@ -85,5 +87,5 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 
-  console.log("server in running on port "+port)
+  console.log("server in running on port " + port)
 }
