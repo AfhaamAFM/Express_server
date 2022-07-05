@@ -3,6 +3,7 @@ import fs from 'fs/promises'
 import AWS from '../config/AWS_config.js'
 
 import dotenv from 'dotenv'
+import response from "../helpers/responseHelper.js"
 
 dotenv.config()
 
@@ -41,14 +42,13 @@ export const uploadFile = (async (req, res, next) => {
             if (err instanceof multer.MulterError) {
                 // A Multer error occurred when uploading.
 
-                console.log('====================================');
                 console.log("Multer upload error");
                 console.log(err);
-                return res.send("A Multer error occurred when uploading.")
+                return res.status(400).json(response.InternalServer(400, "Internal server error", "Multer Upload error", undefined, err))
             } else if (err) {
                 console.log("An unknown error occurred when uploading.");
                 console.log(err);
-                return res.send("An unknown error occurred when uploading.")
+                return res.status(500).json(response.InternalServer(500, "Internal server error", "Multer :An unknown error occurred when uploading.", undefined, err))
 
                 // An unknown error occurred when uploading.
             }
@@ -56,7 +56,12 @@ export const uploadFile = (async (req, res, next) => {
 
 
             if (!req.file) {
-                return res.status(400).json({ message: "No Image" })
+
+                const valErr = {
+                    field: "upload",
+                    message: "No Image uploaded"
+                }
+                return res.status(400).json(response.validation(400, valErr, undefined))
             }
 
 
@@ -71,26 +76,26 @@ export const uploadFile = (async (req, res, next) => {
                 Key: "uploads/" + originalname,
                 Body: fileData,
 
-            }, (s3Data, err) => {
+            }, (err, s3Data) => {
 
-                console.log(s3Data);
+               
                 fs.unlink(path)
-                res.status(200).json({ error: "file uploaded" })
+                if (s3Data) {
 
-                if (err) {
-                    console.log('============S3 Upload Error========================');
-                    console.log(err);
-                    res.status(400).json({ error: "file uploaded error S3" })
-
-                    console.log('====================================');
+                    return res.status(201).json(response.creation(201, undefined, s3Data, undefined))
                 }
+
+
+                console.log('============S3 Upload Error========================');
+                console.log(err);
+                return res.status(500).json(response.InternalServer(500, "Internal server error", "Multer :S3 put Object :: error occurred when uploading.", undefined, err))
+
+
+
 
 
 
             })
-
-
-
 
             next()
 
@@ -98,20 +103,10 @@ export const uploadFile = (async (req, res, next) => {
 
 
     } catch (err) {
-        if (err instanceof multer.MulterError) {
 
-
-            // A Multer error occurred when uploading.
-        } else if (err) {
-            console.log('====================================');
-            console.log("Multer upload error W");
-            res.send("fails")
-            console.log('====================================');
-
-            console.log(err);
-            // An unknown error occurred when uploading.
-        }
         console.log(`Error from fileUpload \n ${err}`);
+        return res.status(500).json(response.InternalServer("500", "Internal server error", "Error from fileUpload", undefined, err))
+
     }
 
 })
